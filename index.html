@@ -45,6 +45,16 @@
             border-bottom: 2px solid #333;
         }
 
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        select, button {
+            touch-action: auto; /* Fix to allow interaction on mobile */
+        }
+
         select {
             background: #222;
             color: #fff;
@@ -52,6 +62,27 @@
             border: 1px solid #444;
             border-radius: 4px;
             font-size: 16px;
+        }
+
+        #init-midi-btn {
+            background: var(--accent-color-2);
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        #init-midi-btn:active {
+            transform: translateY(2px);
+        }
+
+        #init-midi-btn.hidden {
+            display: none;
         }
 
         #midi-status {
@@ -233,7 +264,8 @@
         <div>
             <h2>WebMIDI DJ</h2>
         </div>
-        <div>
+        <div class="header-controls">
+            <button id="init-midi-btn">Connect MIDI</button>
             <select id="midi-out-select">
                 <option value="">No MIDI Output Selected</option>
             </select>
@@ -301,11 +333,14 @@
     </div>
 
     <script>
+        console.log("App initialized at " + new Date().toLocaleTimeString());
+
         // --- MIDI SETUP ---
         let midiAccess = null;
         let activeOutput = null;
         const midiSelect = document.getElementById('midi-out-select');
         const midiStatus = document.getElementById('midi-status');
+        const initBtn = document.getElementById('init-midi-btn');
 
         async function initMIDI() {
             try {
@@ -319,10 +354,11 @@
                 
                 midiStatus.textContent = "● API Ready";
                 midiStatus.classList.add('connected');
+                initBtn.classList.add('hidden'); // Hide the button once connected
             } catch (err) {
                 midiStatus.textContent = "● Error: No MIDI";
                 console.error("MIDI Init Error:", err);
-                alert("MIDI API not available. On iOS, ensure you are using a Web MIDI compatible browser app.");
+                alert("MIDI API not available. Ensure you are on HTTPS and your browser supports Web MIDI.");
             }
         }
 
@@ -351,7 +387,7 @@
             if (activeOutput) {
                 midiStatus.textContent = `● Connected`;
             } else {
-                midiStatus.textContent = "● Disconnected";
+                midiStatus.textContent = "● API Ready (Select Output)";
             }
         }
 
@@ -493,8 +529,8 @@
             });
         });
 
-        // Start MIDI system
-        window.addEventListener('load', initMIDI);
+        // Map the initialization to the new button instead of window load
+        initBtn.addEventListener('click', initMIDI);
     </script>
 </body>
 </html>
